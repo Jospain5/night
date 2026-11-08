@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIGHT FINAL</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+body{ background:#0A1128 !important; color:#F0EDE8 !important; margin:0; font-family:sans-serif; }
+.page{ display:none !important; background:#0A1128 !important; min-height:100vh; }
+.page.active{ display:block !important; }
+#page-messages.active{ display:flex !important; flex-direction:column; height:100vh; background:#0A1128 !important; }
+.feed-top-bar{ height:56px; background:#0F1A32; border-bottom:1px solid #1C2A4A; display:flex; align-items:center; padding:0 18px; position:sticky; top:0; z-index:10; }
+.feed-logo{ font-size:26px; font-weight:900; letter-spacing:4px; color:#FFD88A; text-shadow:0 0 12px #FFD88A; }
+.story-ring{ width:62px; height:62px; border-radius:50%; padding:3px; position:relative; }
+.story-ring.dotted{ border:2.5px dashed #FFD88A; box-shadow:0 0 12px #FFD88A,0 0 25px rgba(255,216,138,0.4); animation:pulse 1.8s infinite; background:transparent; }
+@keyframes pulse{0%,100%{box-shadow:0 0 10px #FFD88A}50%{box-shadow:0 0 22px #FFD88A}}
+.story-ring img{ width:100%; height:100%; border-radius:50%; border:3px solid #0A1020; object-fit:cover; }
+.story-ring.plus{ background:#151D2F; display:flex; align-items:center; justify-content:center; font-size:26px; color:#FFD88A; }
+.stories-bar{ display:flex; gap:14px; overflow-x:auto; padding:12px 18px; scrollbar-width:none; }
+.story-circle{ min-width:70px; text-align:center; cursor:pointer; color:#F0EDE8; }
+.btn-publish-plus{ width:46px; height:46px; border-radius:50%; background:#FFD88A; border:none; font-size:22px; position:relative; }
+.btn-publish-plus::after{ content:''; position:absolute; top:-6px; left:-6px; right:-6px; bottom:-6px; border-radius:50%; border:2px dashed #FFD88A; box-shadow:0 0 12px #FFD88A; }
+.cover{ height:130px; background: linear-gradient(90deg,#1A2A4A,#2A3A5A); position:relative; overflow:hidden; }
+.cover img{ width:100%; height:100%; object-fit:cover; }
+.cover-btn{ position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); color:white; border:none; padding:6px 10px; border-radius:15px; font-size:11px; cursor:pointer; }
+.avatar-centered{ width:90px; height:90px; border-radius:50%; border:3px solid #FFD88A; box-shadow:0 0 15px rgba(255,216,138,0.4); display:block; margin:-45px auto 8px; object-fit:cover; position:relative; z-index:2; }
+.avatar-wrap{ position:relative; width:90px; margin:-45px auto 8px; }
+.avatar-change{ position:absolute; bottom:0; right:0; background:#FFD88A; border:none; width:28px; height:28px; border-radius:50%; font-size:14px; cursor:pointer; z-index:3; }
+.btn-logout-visible{ position:absolute; top:10px; right:12px; background:#FF3B5C; color:white; border:none; padding:7px 14px; border-radius:20px; font-size:11px; font-weight:bold; cursor:pointer; z-index:20; box-shadow:0 0 10px rgba(255,59,92,0.4); }
+.story-viewer{ position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:9999; display:none; flex-direction:column; }
+.story-viewer.active{ display:flex !important; }
+.online-bar{ display:flex; gap:12px; overflow-x:auto; padding:12px 18px; border-bottom:1px solid #1C2A4A; }
+.online-user{ min-width:60px; text-align:center; font-size:11px; cursor:pointer; color:#F0EDE8; }
+.btn-moon-message{ margin:0 auto 12px; padding:12px 20px; background:transparent; border:1.5px solid #FFD88A; border-radius:25px; color:#FFD88A; font-weight:bold; width:calc(100% - 40px); max-width:320px; display:block; cursor:pointer; }
+.btn-follow{ margin:0 auto 10px; padding:10px 20px; background:#FFD88A; border:none; border-radius:20px; font-weight:bold; width:calc(100% - 40px); max-width:320px; display:block; cursor:pointer; }
+.profile-counters{ display:flex; gap:10px; justify-content:center; margin:15px 10px; }
+.counter-box{ background:#151D2F; border:1px solid #2A3A5A; border-radius:12px; padding:10px 10px; text-align:center; min-width:80px; color:#F0EDE8; }
+.counter-box b{ display:block; font-size:18px; color:#FFD88A; }
+.counter-box small{ font-size:10px; }
+.posts-vertical .post, #profilePosts .post, #otherPosts .post{ background:#151E34 !important; border:1px solid #2A3A5A !important; color:#F0EDE8 !important; }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div id="page-home" class="page active">
+<div class="logo" style="text-align:center; padding:60px 20px 20px; font-size:32px; font-weight:900; color:#FFD88A; text-shadow:0 0 15px #FFD88A;">🌕 NIGHT</div>
+<div class="form" style="padding:20px; max-width:340px; margin:0 auto; display:flex; flex-direction:column; gap:12px;">
+<input id="loginEmail" type="email" placeholder="Email" style="padding:14px; border-radius:12px; background:#151D2F; border:1px solid #2A3A5A; color:white;">
+<input id="loginPass" type="password" placeholder="Mot de passe" style="padding:14px; border-radius:12px; background:#151D2F; border:1px solid #2A3A5A; color:white;">
+<button onclick="login()" style="padding:14px; background:#FFD88A; border:none; border-radius:25px; font-weight:bold;">Se connecter</button>
+<span onclick="openForgot()" style="text-align:center; color:#FFD88A; font-size:13px; cursor:pointer; text-decoration:underline; margin-top:4px;">Mot de passe oublié ?</span>
+<button onclick="showPage('page-signup')" style="padding:12px; background:transparent; border:1px solid #2A3A5A; border-radius:25px; color:#7A8BB0; margin-top:8px;">Créer un compte</button>
+</div>
+</div>
+<div id="page-signup" class="page">
+<div class="logo" style="text-align:center; padding:40px 20px; font-size:28px; font-weight:900; color:#FFD88A;">🌕 NIGHT</div>
+<div class="form" style="padding:20px; max-width:340px; margin:0 auto; display:flex; flex-direction:column; gap:12px;">
+<input id="pseudoInput" type="text" placeholder="Pseudo" style="padding:14px; border-radius:12px; background:#151D2F; border:1px solid #2A3A5A; color:white;">
+<input id="signupEmail" type="email" placeholder="Email" style="padding:14px; border-radius:12px; background:#151D2F; border:1px solid #2A3A5A; color:white;">
+<input id="signupPass" type="password" placeholder="Mot de passe" style="padding:14px; border-radius:12px; background:#151D2F; border:1px solid #2A3A5A; color:white;">
+<button onclick="signup()" style="padding:14px; background:#FFD88A; border:none; border-radius:25px; font-weight:bold;">Créer un compte</button>
+<span onclick="showPage('page-home')" style="text-align:center; color:#7A8BB0; cursor:pointer; margin-top:10px;">← Déjà un compte ?</span>
+</div>
+</div>
+<div id="forgotBox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,17,40,0.9); z-index:10000; align-items:center; justify-content:center; padding:20px;">
+<div style="background:#151E34; border:1px solid #2A3A5A; border-radius:16px; padding:20px; width:100%; max-width:320px; text-align:center;">
+<h3 style="color:#FFD88A; margin-bottom:10px;">Réinitialiser</h3>
+<p style="color:#9AA4B2; font-size:13px; margin-bottom:12px;">Entre ton email, on t'envoie le lien</p>
+<input id="forgotEmail" type="email" placeholder="Ton email" style="width:100%; padding:12px; border-radius:10px; background:#0A1128; border:1px solid #2A3A5A; color:white; margin-bottom:12px;">
+<div style="display:flex; gap:10px;">
+<button onclick="sendReset()" style="flex:1; padding:12px; background:#FFD88A; border:none; border-radius:10px; font-weight:bold;">Envoyer</button>
+<button onclick="closeForgot()" style="flex:1; padding:12px; background:#1C2A4A; border:none; border-radius:10px; color:white;">Annuler</button>
+</div>
+<p id="forgotMsg" style="display:none; margin-top:12px; color:#4ADE80; font-size:13px;"></p>
+</div>
+</div>
+<div id="page-feed" class="page">
+<div class="feed-top-bar"><div class="feed-logo">NIGHT 🌕</div><div style="margin-left:auto;"><button onclick="document.getElementById('newPostBox').style.display='block'" class="btn-publish-plus">+</button></div></div>
+<div class="stories-bar" id="storiesBar">
+<div class="story-circle" onclick="addStory()"><div class="story-ring plus dotted">+</div><small>Ta story</small></div>
+</div>
+<div id="newPostBox" style="display:none; background:#151D2F; margin:10px 18px; padding:14px; border-radius:14px; border:1px solid #2A3A5A;">
+<textarea id="postText" placeholder="Que fais-tu cette nuit ?" style="width:100%; background:#0A1020; border:1px solid #2A3A5A; border-radius:10px; padding:10px; color:white; min-height:60px;"></textarea>
+<input type="file" id="postImage" accept="image/*" style="margin-top:10px; width:100%; color:#7A8BB0;">
+<button id="vocalBtn" onclick="toggleVocal()" style="width:100%; margin-top:10px; padding:10px; background:#1C2A4A; border:1px solid #FFD88A; border-radius:20px; color:#FFD88A;">🎙️ Appuie pour parler</button>
+<p id="vocalStatus" style="display:none; text-align:center; color:#FFD88A; margin-top:6px;">🔴 0s</p>
+<audio id="vocalPreview" controls style="display:none; width:100%; margin-top:8px;"></audio>
+<div style="display:flex; gap:10px; margin-top:10px;"><button onclick="publishPost()" style="flex:1; padding:10px; background:#FFD88A; border:none; border-radius:10px; font-weight:bold;">Publier</button><button onclick="cancelPost()" style="flex:1; padding:10px; background:#1C2A4A; border:none; border-radius:10px; color:white;">Annuler</button></div>
+</div>
+<div class="posts-vertical" id="feedPosts" style="padding:10px 18px; display:flex; flex-direction:column; gap:12px;"></div>
+</div>
+<div id="storyViewer" class="story-viewer" onclick="closeStory()">
+<div style="padding:15px; display:flex; justify-content:space-between; color:white; background:linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);"><span id="storyUser"></span><div><span id="storyViews">0 Vu</span> <span id="storyDel" style="display:none; margin-left:15px;" onclick="event.stopPropagation(); deleteStory();">🗑</span> <span style="margin-left:15px;">✕</span></div></div>
+<div style="flex:1; display:flex; align-items:center; justify-content:center;"><img id="storyImage" src="" style="max-width:100%; max-height:75vh; border-radius:12px;"></div>
+</div>
+<div id="page-search" class="page">
+<div style="padding:20px;"><h2 style="color:#F0EDE8;">Recherche</h2><input id="searchInput" type="text" placeholder="🔍 Pseudo..." oninput="doSearch()" style="width:100%; margin-top:12px; padding:14px; background:#151D2F; border:1px solid #2A3A5A; border-radius:14px; color:white;"></div>
+<div id="searchResults" style="padding:0 18px; display:flex; flex-direction:column; gap:10px;"></div>
+</div>
+<div id="page-other" class="page" style="position:relative; text-align:center;">
+<div style="padding:18px; text-align:left;"><span onclick="goBack()" style="cursor:pointer; color:white;">← Retour</span></div>
+<div class="cover"><img id="otherCoverImg" src=""></div>
+<img id="otherAvatar" class="avatar-centered" src="">
+<h3 id="otherName" style="color:#F0EDE8;"></h3><p id="otherBio" style="color:#7A8BB0; font-size:13px;"></p>
+<div class="profile-counters"><div class="counter-box"><b id="otherFollowers">0</b><small>ABONNÉS</small></div><div class="counter-box"><b id="otherLikes">0</b><small>LIKES</small></div></div>
+<button id="followBtn" class="btn-follow" onclick="toggleFollow()">S'abonner</button>
+<button class="btn-moon-message" onclick="sendMessage()">✉️ Envoyer un message</button>
+<div id="otherPosts" style="padding:10px 18px; text-align:left; display:flex; flex-direction:column; gap:10px;"></div>
+</div>
+<div id="page-profile" class="page" style="position:relative;">
+<button class="btn-logout-visible" onclick="logout()">⏻ Déconnexion</button>
+<div class="cover" style="margin-top:38px;"><img id="myCoverImg" src="" style="display:none;"><button class="cover-btn" onclick="document.getElementById('coverInput').click()">📷 Cover</button></div>
+<input type="file" id="coverInput" accept="image/*" style="display:none;" onchange="changeCover(event)">
+<input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="changeAvatar(event)">
+<div class="avatar-wrap"><img id="myAvatarImg" class="avatar-centered" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="margin: -45px 0 0 0; object-fit:cover;"><button class="avatar-change" onclick="document.getElementById('avatarInput').click()">📷</button></div>
+<div style="text-align:center;"><h3 id="profileName" style="color:#F0EDE8;">@moi</h3></div>
+<div class="profile-counters"><div class="counter-box"><b id="myFollowers">0</b><small>ABONNÉS</small></div><div class="counter-box"><b id="myFollowing">0</b><small>ABONNEMENTS</small></div><div class="counter-box"><b id="myLikes">0</b><small>LIKES</small></div></div>
+<div id="myStoryBadge" style="display:none; text-align:center; margin:10px;"><span style="padding:6px 12px; background:#151D2F; border:1.5px dashed #FFD88A; border-radius:20px; color:#FFD88A; font-size:12px;">🌕 Ta story active - <span id="myStoryViews">0 Vu</span></span></div>
+<div id="profilePosts" style="padding:10px 18px; display:flex; flex-direction:column; gap:12px;"></div>
+</div>
+<div id="page-notifs" class="page"><h2 style="padding:20px; color:#F0EDE8;">Notifications</h2><div id="notifsList" style="padding:0 18px; display:flex; flex-direction:column; gap:10px;"></div></div>
+<div id="page-messages" class="page">
+<h2 id="msgTitle" style="padding:18px; color:#F0EDE8;">Messages</h2>
+<div class="online-bar" id="onlineBar"></div>
+<div id="messagesList" style="padding:10px 18px; display:flex; flex-direction:column; gap:10px; overflow-y:auto;"></div>
+<div id="chatBox" style="display:none; flex-direction:column; height:100vh; width:100%; position:absolute; top:0; left:0; background:#0A1020; z-index:20;">
+<div style="display:flex; align-items:center; gap:10px; padding:14px 18px; border-bottom:1px solid #1C2A4A; background:#0F1A32;"><span onclick="closeChat()" style="cursor:pointer; font-size:20px; color:white;">←</span><img id="chatAvatar" src="" style="width:32px; height:32px; border-radius:50%;"><b id="chatName" style="color:white;"></b></div>
+<div id="chatMessages" style="flex:1; overflow-y:auto; padding:14px 18px; display:flex; flex-direction:column; gap:10px;"></div>
+<div style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 15px; padding-bottom:85px; background:#0A1020; border-top:1px solid #1C2A4A;">
+<input id="chatInput" type="text" placeholder="Message..." style="flex:1; max-width:500px; padding:12px 18px; background:#151D2F; border:1px solid #2A3A5A; border-radius:25px; color:white; outline:none;">
+<button onclick="sendChatMessage()" style="width:42px; height:42px; border-radius:50%; background:#FFD88A; border:none; display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer;">✈️</button>
+</div>
+</div>
+</div>
+<input type="file" id="storyInput" accept="image/*" style="display:none;" onchange="handleStoryFile(event)">
+<div class="bottom-nav" id="bottomNav" style="position:fixed; bottom:0; left:0; width:100%; background:#0F1A32; border-top:1px solid #1C2A4A; display:flex; justify-content:space-around; padding:8px 0 4px;">
+<button id="nav-feed" onclick="showPage('page-feed')" class="nav-btn active-nav" style="background:none; border:none; color:#7A8BB0; display:flex; flex-direction:column; align-items:center; gap:2px;"><span>◍</span><small>Feed</small></button>
+<button id="nav-search" onclick="showPage('page-search')" class="nav-btn" style="background:none; border:none; color:#7A8BB0; display:flex; flex-direction:column; align-items:center; gap:2px;"><span>⌕</span><small>Search</small></button>
+<button id="nav-notifs" onclick="showPage('page-notifs')" class="nav-btn" style="background:none; border:none; color:#7A8BB0; display:flex; flex-direction:column; align-items:center; gap:2px;"><span>🔔</span><small>Notifs</small></button>
+<button id="nav-profile" onclick="showPage('page-profile')" class="nav-btn" style="background:none; border:none; color:#7A8BB0; display:flex; flex-direction:column; align-items:center; gap:2px;"><span>○</span><small>Profil</small></button>
+<button id="nav-msgs" onclick="showPage('page-messages')" class="nav-btn" style="background:none; border:none; color:#7A8BB0; display:flex; flex-direction:column; align-items:center; gap:2px;"><span>✉</span><small>Msgs</small></button>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+window.onerror = function(m, s, l){ alert("ERREUR : " + m + " (ligne " + l + ")"); };
+var firebaseConfig = {
+  apiKey: "AIzaSyDfD17y_VtOKVQwVCTe__XcT6izktV_rGg",
+  authDomain: "night-app-8e88c.firebaseapp.com",
+  projectId: "night-app-8e88c",
+  storageBucket: "night-app-8e88c.firebasestorage.app",
+  messagingSenderId: "292682644101",
+  appId: "1:292682644101:web:86e875a95f32d1b4b9c7ec",
+  measurementId: "G-GN6C1R76CY"
+};
+(function(){
+  if (typeof firebase === "undefined") { alert("Firebase ne s'est pas chargé. Vérifie ta connexion internet."); return; }
+  firebase.initializeApp(firebaseConfig);
+  window.firebaseAuth = firebase.auth();
+  window.db = firebase.firestore();
+  window.firebaseSendReset = function(auth, email){ return auth.sendPasswordResetEmail(email); };
+})();
+</script>
+<script>
+const users = { luna:{name:'@luna.park', bio:'Dreamer • Night owl', avatar:'https://i.pravatar.cc/100?img=1', online:true}, james:{name:'@james.night', bio:'Photographer', avatar:'https://i.pravatar.cc/100?img=2', online:false}, mia:{name:'@mia.moon', bio:'🌙', avatar:'https://i.pravatar.cc/100?img=3', online:true}, alex:{name:'@alex.night', bio:'Nocturnal', avatar:'https://i.pravatar.cc/100?img=5', online:true}, };
+let stories = [];
+let notifs = JSON.parse(localStorage.getItem('night_notifs')||'[]');
+let following = JSON.parse(localStorage.getItem('night_following')||'[]');
+let allPosts = [];
+let conversations = JSON.parse(localStorage.getItem('night_convs')||'{}');
+let currentView=null, prevPage='page-feed', currentChat=null;
+let mediaRecorder=null, audioChunks=[], audioBlob=null, vocalTimer=null, vocalSeconds=0;
+let totalLikes = parseInt(localStorage.getItem('night_likes')||'0');
+function showPage(id){ if(id!=='page-other') prevPage=id; document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.getElementById('bottomNav').style.display=(id==='page-home'||id==='page-signup')?'none':'flex'; document.querySelectorAll('.nav-btn').forEach(b=>{b.style.color='#7A8BB0'; b.classList.remove('active-nav');}); const activeMap={ 'page-feed':'nav-feed','page-search':'nav-search','page-notifs':'nav-notifs','page-profile':'nav-profile','page-messages':'nav-msgs'}; if(activeMap[id]){ document.getElementById(activeMap[id]).style.color='#FFD88A'; document.getElementById(activeMap[id]).style.textShadow='0 0 10px #FFD88A'; document.getElementById(activeMap[id]).classList.add('active-nav'); } if(id==='page-profile'){ updateFollowUI(); updateMyAvatar(); document.getElementById('myLikes').textContent=myLikesCount(); renderMyStoryBadge(); } if(id==='page-notifs'){ renderNotifs(); scheduleMarkRead(); } if(id==='page-messages') renderMessagesList(); if(id!=='page-messages') document.getElementById('chatBox').style.display='none'; }
+function goBack(){ showPage(prevPage); }
+function traduireErreur(e){
+  var c = (e && e.code) || '';
+  if(c==='auth/email-already-in-use') return 'Cet email est déjà utilisé.';
+  if(c==='auth/invalid-email') return 'Email invalide.';
+  if(c==='auth/weak-password') return 'Mot de passe trop faible (6 caractères minimum).';
+  if(c==='auth/user-not-found'||c==='auth/wrong-password'||c==='auth/invalid-credential'||c==='auth/invalid-login-credentials') return 'Email ou mot de passe incorrect.';
+  if(c==='auth/operation-not-allowed') return "La connexion par email n'est pas activée : Firebase → Authentication → Sign-in method → Email/Mot de passe.";
+  if(c==='permission-denied') return "Accès refusé : vérifie que les règles Firestore sont bien publiées.";
+  if(c==='auth/network-request-failed') return 'Problème de connexion internet.';
+  return 'Erreur : ' + (e && e.message ? e.message : e);
+}
+async function signup(){
+  var p = document.getElementById('pseudoInput').value.trim();
+  var email = document.getElementById('signupEmail').value.trim();
+  var pass = document.getElementById('signupPass').value;
+  if(!p){ alert('Pseudo requis'); return; }
+  if(!email || !pass){ alert('Email et mot de passe requis'); return; }
+  if(pass.length < 6){ alert('Mot de passe : 6 caractères minimum'); return; }
+  var f = p; if(!f.startsWith('@')) f = '@' + f;
+  try{
+    var cred = await window.firebaseAuth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({ displayName: f });
+    try{
+      await window.db.collection('users').doc(cred.user.uid).set({
+        pseudo: f, pseudoLower: f.toLowerCase(), createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }catch(err){ console.log('Profil Firestore non enregistré', err); }
+    document.getElementById('profileName').textContent = f;
+    localStorage.setItem('night_pseudo', f);
+    showPage('page-feed');
+  }catch(e){ alert(traduireErreur(e)); }
+}
+async function login(){
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass = document.getElementById('loginPass').value;
+  if(!email || !pass){ alert('Email et mot de passe requis'); return; }
+  try{
+    var cred = await window.firebaseAuth.signInWithEmailAndPassword(email, pass);
+    var f = cred.user.displayName || ('@' + email.split('@')[0]);
+    document.getElementById('profileName').textContent = f;
+    localStorage.setItem('night_pseudo', f);
+    ensureUserDoc(cred.user, f);
+    showPage('page-feed');
+  }catch(e){ alert(traduireErreur(e)); }
+}
+function logout(){ if(confirm('Se déconnecter ?')){ localStorage.removeItem('night_pseudo'); if(window.firebaseAuth){ window.firebaseAuth.signOut(); } showPage('page-home'); } }
+
+
+function cancelPost(){ document.getElementById('newPostBox').style.display='none'; document.getElementById('postText').value=''; document.getElementById('postImage').value=''; audioBlob=null; document.getElementById('vocalPreview').style.display='none'; document.getElementById('vocalStatus').style.display='none'; }
+function savePosts(){}
+function saveNotifs(){ localStorage.setItem('night_notifs', JSON.stringify(notifs)); }
+function addNotif(text){ notifs.unshift({text:text, time:Date.now()}); saveNotifs(); if(notifs.length>30) notifs=notifs.slice(0,30); }
+var unsubPosts = null, publishing = false;
+function myLikesCount(){ return allPosts.filter(function(p){ return myUid && p.authorUid === myUid; }).reduce(function(a, p){ return a + p.likes; }, 0); }
+function startPosts(){
+  stopPosts();
+  unsubPosts = window.db.collection('posts').orderBy('createdAt', 'desc').limit(50).onSnapshot(function(snap){
+    allPosts = [];
+    snap.forEach(function(d){
+      var p = d.data({ serverTimestamps: 'estimate' });
+      var lb = Array.isArray(p.likedBy) ? p.likedBy : [];
+      allPosts.push({ id: d.id, authorUid: p.authorUid, user: p.user || 'Utilisateur', text: p.text || '', img: p.img || '', audio: (typeof p.audio === 'string' ? p.audio : ''), likedBy: lb, likes: lb.length, comments: Array.isArray(p.comments) ? p.comments : [] });
+    });
+    renderAllPosts();
+  }, function(e){ alert('Posts : ' + traduireErreur(e)); });
+}
+function stopPosts(){
+  if(unsubPosts){ unsubPosts(); unsubPosts = null; }
+  allPosts = [];
+  renderAllPosts();
+}
+function renderAllPosts(){
+  const feed = document.getElementById('feedPosts'), prof = document.getElementById('profilePosts'), other = document.getElementById('otherPosts');
+  if(!feed || !prof) return;
+  if(Array.prototype.some.call(document.querySelectorAll('#feedPosts audio, #profilePosts audio, #otherPosts audio'), function(a){ return !a.paused; })){ renderPending = true; return; }
+  feed.innerHTML = ''; prof.innerHTML = ''; if(other) other.innerHTML = '';
+  if(allPosts.length === 0){ feed.innerHTML = '<p style="color:#7A8BB0; text-align:center;">Aucun post pour le moment. Touche le + pour publier le premier !</p>'; }
+  allPosts.forEach(post => {
+    const isMine = !!myUid && post.authorUid === myUid;
+    const html = createPostHTML(post, isMine);
+    const d1 = document.createElement('div'); d1.className = 'post'; d1.style.cssText = 'background:#151E34; border:1px solid #2A3A5A; border-radius:14px; padding:12px;'; d1.innerHTML = html; feed.appendChild(d1);
+    if(isMine){ const d2 = document.createElement('div'); d2.className = 'post'; d2.style.cssText = 'background:#151E34; border:1px solid #2A3A5A; border-radius:14px; padding:12px;'; d2.innerHTML = html; prof.appendChild(d2); }
+    if((currentViewUid && post.authorUid === currentViewUid) || (currentView && post.user === (users[currentView] && users[currentView].name))){ const d3 = document.createElement('div'); d3.style.cssText = 'background:#151E34; border:1px solid #2A3A5A; border-radius:14px; padding:12px;'; d3.innerHTML = html; if(other) other.appendChild(d3); }
+  });
+  const ml = document.getElementById('myLikes'); if(ml) ml.textContent = myLikesCount();
+  if(currentViewUid){ const ol = document.getElementById('otherLikes'); if(ol) ol.textContent = allPosts.filter(function(p){ return p.authorUid === currentViewUid; }).reduce(function(a, p){ return a + p.likes; }, 0); }
+}
+function createPostHTML(post, isMine){
+  const liked = !!myUid && post.likedBy.indexOf(myUid) !== -1;
+  const del = isMine ? `<span style="float:right; color:#FF3B5C; cursor:pointer; font-size:12px;" onclick="deletePost('${post.id}')">🗑 Supprimer</span>` : '';
+  const commentsHTML = post.comments.map(c => `<div style="margin-top:8px; padding:8px; background:#0A1128; border-radius:8px; font-size:13px; border-left:2px solid #FFD88A; color:#F0EDE8; word-break:break-word;"><b style="color:#E6C87A;">${esc(c.user)}</b> ${esc(c.text)}</div>`).join('');
+  const imgOk = post.img && post.img.indexOf('data:image/jpeg;base64,') === 0;
+  const audioOk = typeof post.audio === 'string' && post.audio.length < 300000 && AUDIO_RE.test(post.audio);
+  return `${del}<div><div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="viewUserById('${esc(post.authorUid || '')}')"><img src="${avatarFor(post.authorUid, post.user)}" style="width:34px; height:34px; border-radius:50%; object-fit:cover;"><b style="color:#E6C87A;">${esc(post.user)}</b></div><div style="margin:8px 0; color:#F0EDE8; white-space:pre-wrap; word-break:break-word;">${esc(post.text)}</div>${imgOk ? `<img src="${post.img}" style="width:100%; border-radius:10px; margin:8px 0;"><br>` : ''}${audioOk ? `<audio controls preload="none" src="${post.audio}" style="width:100%; margin:8px 0;"></audio>` : ''}<div style="display:flex; gap:15px; margin-top:8px; color:#F0EDE8;"><span onclick="likePost('${post.id}')" style="cursor:pointer;">${liked ? '❤️' : '🤍'} ${post.likes}</span><span style="cursor:pointer;" onclick="commentPost('${post.id}')">💬 ${post.comments.length}</span></div><div>${commentsHTML}</div></div>`;
+}
+async function deletePost(id){
+  if(!confirm('Supprimer ce post ?')) return;
+  try{ await window.db.collection('posts').doc(id).delete(); }catch(e){ alert(traduireErreur(e)); }
+}
+async function likePost(id){
+  if(!myUid){ alert('Connecte-toi pour liker.'); return; }
+  const post = allPosts.find(p => p.id === id); if(!post) return;
+  const liked = post.likedBy.indexOf(myUid) !== -1;
+  const fv = firebase.firestore.FieldValue;
+  try{
+    await window.db.collection('posts').doc(id).update({ likedBy: liked ? fv.arrayRemove(myUid) : fv.arrayUnion(myUid) });
+    if(liked){ removeNotif(post.authorUid, 'like_' + id + '_' + myUid); }
+    else { sendNotif(post.authorUid, 'like', { postText: post.text }, 'like_' + id + '_' + myUid); }
+  }catch(e){ alert(traduireErreur(e)); }
+}
+async function commentPost(id){
+  if(!myUid){ alert('Connecte-toi pour commenter.'); return; }
+  const text = prompt('Ton commentaire :');
+  if(!text || !text.trim()) return;
+  const fv = firebase.firestore.FieldValue;
+  const post = allPosts.find(p => p.id === id);
+  const clean = text.trim().slice(0, 500);
+  try{
+    await window.db.collection('posts').doc(id).update({
+      comments: fv.arrayUnion({ uid: myUid, user: localStorage.getItem('night_pseudo') || '@moi', text: clean, time: Date.now() })
+    });
+    if(post){ sendNotif(post.authorUid, 'comment', { text: clean, postText: post.text }); }
+  }catch(e){ alert(traduireErreur(e)); }
+}
+function compressImage(file, maxSide, limitChars){
+  maxSide = maxSide || 720; limitChars = limitChars || 600000;
+  return new Promise(function(resolve, reject){
+    var reader = new FileReader();
+    reader.onerror = function(){ reject(new Error('Lecture de la photo impossible')); };
+    reader.onload = function(ev){
+      var img = new Image();
+      img.onerror = function(){ reject(new Error('Photo non valide')); };
+      img.onload = function(){
+        var max = maxSide, w = img.width, h = img.height;
+        if(w > h && w > max){ h = Math.round(h * max / w); w = max; }
+        else if(h >= w && h > max){ w = Math.round(w * max / h); h = max; }
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        var q = 0.7, out = c.toDataURL('image/jpeg', q);
+        while(out.length > limitChars && q > 0.3){ q -= 0.1; out = c.toDataURL('image/jpeg', q); }
+        if(out.length > limitChars){ reject(new Error('Photo trop lourde')); } else { resolve(out); }
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+async function publishPost(){
+  if(publishing) return;
+  if(!myUid){ alert('Connecte-toi pour publier.'); return; }
+  const text = document.getElementById('postText').value.trim();
+  const file = document.getElementById('postImage').files[0];
+  if(mediaRecorder && mediaRecorder.state === 'recording'){ alert("Arrête d'abord l'enregistrement du vocal."); return; }
+  if(!text && !file && !audioBlob){ alert('Ajoute un texte, une photo ou un vocal'); return; }
+  publishing = true;
+  try{
+    let img = '', audio = '';
+    if(file){ img = await compressImage(file); }
+    if(audioBlob){
+      audio = await blobToDataURL(audioBlob);
+      if(!AUDIO_RE.test(audio) || audio.length > 280000){ throw new Error('Vocal trop long ou non supporté (45 secondes maximum).'); }
+    }
+    await window.db.collection('posts').add({
+      authorUid: myUid,
+      user: localStorage.getItem('night_pseudo') || '@moi',
+      text: text.slice(0, 2000),
+      img: img,
+      audio: audio,
+      likedBy: [],
+      comments: [],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    cancelPost();
+  }catch(e){ alert(traduireErreur(e)); }
+  publishing = false;
+}
+function addStory(){ document.getElementById('storyInput').click(); }
+var myUid = null, allMyMsgs = [], realUsers = {}, allUsers = {}, unsubMsgs = null, unsubUsers = null, currentChatUid = null;
+function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function avatarSrc(p){
+  var l = esc(String(p||'?').replace('@','').charAt(0).toUpperCase() || '?');
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#1C2A4A"/><text x="32" y="43" font-size="32" text-anchor="middle" fill="#FFD88A" font-family="sans-serif">' + l + '</text></svg>';
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+var AVATAR_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/;
+function avatarFor(uid, pseudo){
+  var u = allUsers[uid];
+  if(u && typeof u.avatar === 'string' && u.avatar.length < 60000 && AVATAR_RE.test(u.avatar)) return u.avatar;
+  return avatarSrc(pseudo);
+}
+function updateMyAvatar(){
+  var img = document.getElementById('myAvatarImg');
+  if(!img || !myUid) return;
+  img.src = avatarFor(myUid, localStorage.getItem('night_pseudo') || '@moi');
+}
+function compressSquare(file, size){
+  return new Promise(function(resolve, reject){
+    var reader = new FileReader();
+    reader.onerror = function(){ reject(new Error('Lecture de la photo impossible')); };
+    reader.onload = function(ev){
+      var img = new Image();
+      img.onerror = function(){ reject(new Error('Photo non valide')); };
+      img.onload = function(){
+        var side = Math.min(img.width, img.height);
+        var sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+        var c = document.createElement('canvas'); c.width = size; c.height = size;
+        c.getContext('2d').drawImage(img, sx, sy, side, side, 0, 0, size, size);
+        var q = 0.8, out = c.toDataURL('image/jpeg', q);
+        while(out.length > 40000 && q > 0.4){ q -= 0.1; out = c.toDataURL('image/jpeg', q); }
+        if(out.length > 40000){ reject(new Error('Photo trop lourde')); } else { resolve(out); }
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+async function changeAvatar(e){
+  var file = e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  if(!myUid){ alert('Connecte-toi pour changer ta photo.'); return; }
+  try{
+    var data = await compressSquare(file, 200);
+    await window.db.collection('users').doc(myUid).set({ avatar: data }, { merge: true });
+    allUsers[myUid] = Object.assign({}, allUsers[myUid] || {}, { avatar: data });
+    updateMyAvatar();
+    renderAllPosts();
+  }catch(err){ alert(traduireErreur(err)); }
+}
+var COVER_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/;
+function setCoverImg(id, data){
+  var img = document.getElementById(id);
+  if(!img) return;
+  if(typeof data === 'string' && data.length < 130000 && COVER_RE.test(data)){ img.src = data; img.style.display = 'block'; }
+  else { img.removeAttribute('src'); img.style.display = 'none'; }
+}
+function loadMyCover(){
+  if(!myUid){ setCoverImg('myCoverImg', null); return; }
+  var uid = myUid;
+  window.db.collection('covers').doc(uid).get().then(function(d){
+    if(myUid === uid){ setCoverImg('myCoverImg', d.exists ? d.data().cover : null); }
+  }).catch(function(e){ console.log('cover', e); });
+}
+function compressCover(file){
+  return new Promise(function(resolve, reject){
+    var reader = new FileReader();
+    reader.onerror = function(){ reject(new Error('Lecture de la photo impossible')); };
+    reader.onload = function(ev){
+      var img = new Image();
+      img.onerror = function(){ reject(new Error('Photo non valide')); };
+      img.onload = function(){
+        var W = 720, H = 240, sx, sy, sw, sh;
+        if(img.width / img.height > W / H){ sh = img.height; sw = sh * W / H; sx = (img.width - sw) / 2; sy = 0; }
+        else { sw = img.width; sh = sw * H / W; sx = 0; sy = (img.height - sh) / 2; }
+        var c = document.createElement('canvas'); c.width = W; c.height = H;
+        c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+        var q = 0.75, out = c.toDataURL('image/jpeg', q);
+        while(out.length > 90000 && q > 0.3){ q -= 0.1; out = c.toDataURL('image/jpeg', q); }
+        if(out.length > 90000){ reject(new Error('Photo trop lourde')); } else { resolve(out); }
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+async function changeCover(e){
+  var file = e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  if(!myUid){ alert('Connecte-toi pour changer ta couverture.'); return; }
+  try{
+    var data = await compressCover(file);
+    await window.db.collection('covers').doc(myUid).set({ cover: data });
+    setCoverImg('myCoverImg', data);
+  }catch(err){ alert(traduireErreur(err)); }
+}
+var STORY_MS = 7 * 60 * 60 * 1000, unsubStories = null, storyTick = null, storyTimer = null, openStoryId = null, renderPending = false;
+var AUDIO_RE = /^data:audio\/(webm|ogg|mp4|mpeg|aac)(;codecs=[A-Za-z0-9.,]+)?;base64,[A-Za-z0-9+\/=]+$/;
+function okJpeg(d, max){ return (typeof d === 'string' && d.length < max && AVATAR_RE.test(d)) ? d : ''; }
+function blobToDataURL(b){
+  return new Promise(function(res, rej){
+    var r = new FileReader();
+    r.onload = function(){ res(r.result); };
+    r.onerror = function(){ rej(new Error('Lecture du vocal impossible')); };
+    r.readAsDataURL(b);
+  });
+}
+['pause', 'ended'].forEach(function(ev){
+  document.addEventListener(ev, function(e){
+    if(renderPending && e.target && e.target.tagName === 'AUDIO'){ renderPending = false; renderAllPosts(); }
+  }, true);
+});
+function startStories(){
+  stopStories();
+  var since = firebase.firestore.Timestamp.fromMillis(Date.now() - STORY_MS);
+  unsubStories = window.db.collection('stories').where('createdAt', '>', since).orderBy('createdAt', 'desc').onSnapshot(function(snap){
+    stories = [];
+    snap.forEach(function(d){
+      var x = d.data({ serverTimestamps: 'estimate' });
+      var t = (x.createdAt && x.createdAt.toMillis) ? x.createdAt.toMillis() : Date.now();
+      stories.push({ id: d.id, authorUid: x.authorUid, user: x.user || 'Utilisateur', img: x.img || '', time: t, viewers: Array.isArray(x.viewers) ? x.viewers : [] });
+    });
+    renderStories(); renderMyStoryBadge();
+  }, function(e){ alert('Stories : ' + traduireErreur(e)); });
+  storyTick = setInterval(function(){ renderStories(); renderMyStoryBadge(); }, 60000);
+}
+function stopStories(){
+  if(unsubStories){ unsubStories(); unsubStories = null; }
+  if(storyTick){ clearInterval(storyTick); storyTick = null; }
+  stories = [];
+  renderStories(); renderMyStoryBadge();
+}
+function renderStories(){
+  var bar = document.getElementById('storiesBar');
+  if(!bar) return;
+  var now = Date.now();
+  stories = stories.filter(function(s){ return now - s.time < STORY_MS; });
+  bar.innerHTML = '<div class="story-circle" onclick="addStory()"><div class="story-ring plus dotted">+</div><small>Ta story</small></div>';
+  stories.forEach(function(s, i){
+    var left = Math.max(1, Math.ceil((STORY_MS - (now - s.time)) / 3600000));
+    var mine = !!myUid && s.authorUid === myUid;
+    var seen = !!myUid && !mine && s.viewers.indexOf(myUid) !== -1;
+    var div = document.createElement('div');
+    div.className = 'story-circle';
+    div.onclick = function(){ openStory(i); };
+    div.innerHTML = '<div class="story-ring dotted"' + (seen ? ' style="opacity:0.55;"' : '') + '><img src="' + okJpeg(s.img, 300000) + '"></div><small>' + esc(s.user) + '<br>' + left + 'h' + (mine ? ' • ' + s.viewers.length + ' Vu' : '') + '</small>';
+    bar.appendChild(div);
+  });
+}
+function renderMyStoryBadge(){
+  var badge = document.getElementById('myStoryBadge');
+  if(!badge) return;
+  var mine = stories.filter(function(s){ return !!myUid && s.authorUid === myUid; });
+  if(mine.length > 0){
+    badge.style.display = 'block';
+    var total = mine.reduce(function(a, s){ return a + s.viewers.length; }, 0);
+    document.getElementById('myStoryViews').textContent = total + ' Vu';
+  } else { badge.style.display = 'none'; }
+}
+async function handleStoryFile(e){
+  var file = e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  if(!myUid){ alert('Connecte-toi pour publier une story.'); return; }
+  try{
+    var img = await compressImage(file, 640, 220000);
+    await window.db.collection('stories').add({
+      authorUid: myUid,
+      user: localStorage.getItem('night_pseudo') || '@moi',
+      img: img,
+      viewers: [],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      expireAt: firebase.firestore.Timestamp.fromMillis(Date.now() + STORY_MS)
+    });
+  }catch(err){ alert(traduireErreur(err)); }
+}
+function openStory(i){
+  var s = stories[i];
+  if(!s) return;
+  openStoryId = s.id;
+  var mine = !!myUid && s.authorUid === myUid;
+  document.getElementById('storyImage').src = okJpeg(s.img, 300000);
+  document.getElementById('storyUser').textContent = s.user;
+  document.getElementById('storyViews').textContent = mine ? (s.viewers.length + ' Vu') : '';
+  document.getElementById('storyDel').style.display = mine ? 'inline' : 'none';
+  document.getElementById('storyViewer').classList.add('active');
+  if(!mine && myUid && s.viewers.indexOf(myUid) === -1){
+    window.db.collection('stories').doc(s.id).update({ viewers: firebase.firestore.FieldValue.arrayUnion(myUid) }).catch(function(e){ console.log('vue', e); });
+  }
+  clearTimeout(storyTimer);
+  storyTimer = setTimeout(closeStory, 5000);
+}
+function closeStory(){
+  document.getElementById('storyViewer').classList.remove('active');
+  clearTimeout(storyTimer);
+  openStoryId = null;
+}
+async function deleteStory(){
+  if(!openStoryId) return;
+  clearTimeout(storyTimer);
+  if(!confirm('Supprimer cette story ?')){ storyTimer = setTimeout(closeStory, 3000); return; }
+  var id = openStoryId;
+  closeStory();
+  try{ await window.db.collection('stories').doc(id).delete(); }catch(err){ alert(traduireErreur(err)); }
+}
+async function toggleVocal(){
+  const btn = document.getElementById('vocalBtn'), status = document.getElementById('vocalStatus'), preview = document.getElementById('vocalPreview');
+  if(mediaRecorder && mediaRecorder.state === 'recording'){ mediaRecorder.stop(); return; }
+  if(typeof MediaRecorder === 'undefined' || !navigator.mediaDevices){ alert("Ton navigateur ne permet pas d'enregistrer un vocal."); return; }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    var opts = { audioBitsPerSecond: 24000 };
+    var types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+    for(var i = 0; i < types.length; i++){
+      if(MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(types[i])){ opts.mimeType = types[i]; break; }
+    }
+    mediaRecorder = new MediaRecorder(stream, opts);
+    audioChunks = [];
+    mediaRecorder.ondataavailable = function(e){ if(e.data && e.data.size){ audioChunks.push(e.data); } };
+    mediaRecorder.onstop = function(){
+      clearInterval(vocalTimer);
+      stream.getTracks().forEach(function(t){ t.stop(); });
+      btn.textContent = '🎙️ Appuie pour parler';
+      status.style.display = 'none';
+      audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || opts.mimeType || 'audio/webm' });
+      preview.src = URL.createObjectURL(audioBlob);
+      preview.style.display = 'block';
+    };
+    mediaRecorder.start();
+    btn.textContent = '⏹️ Arrêter';
+    status.style.display = 'block';
+    vocalSeconds = 0;
+    status.textContent = '🔴 0s / 45s';
+    vocalTimer = setInterval(function(){
+      vocalSeconds++;
+      status.textContent = '🔴 ' + vocalSeconds + 's / 45s';
+      if(vocalSeconds >= 45 && mediaRecorder.state === 'recording'){ mediaRecorder.stop(); }
+    }, 1000);
+  }catch(e){ alert("Impossible d'utiliser le micro. Autorise le micro pour ce site dans Chrome, puis réessaie."); }
+}
+var myNotifs = [], unsubNotifs = null, notifReadTimer = null;
+function notifCol(toUid){ return window.db.collection('users').doc(toUid).collection('notifs'); }
+function sendNotif(toUid, type, extra, id){
+  if(!toUid || !myUid || toUid === myUid) return Promise.resolve();
+  var data = {
+    fromUid: myUid,
+    fromPseudo: (localStorage.getItem('night_pseudo') || '@moi').slice(0, 40),
+    type: type,
+    read: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  if(extra && extra.text){ data.text = String(extra.text).slice(0, 80); }
+  if(extra && extra.postText){ data.postText = String(extra.postText).slice(0, 40); }
+  var p = id ? notifCol(toUid).doc(id).set(data) : notifCol(toUid).add(data);
+  return p.catch(function(e){ console.log('notif', e); });
+}
+function removeNotif(toUid, id){
+  if(!toUid || !myUid || toUid === myUid) return Promise.resolve();
+  return notifCol(toUid).doc(id).delete().catch(function(e){ console.log('notif', e); });
+}
+function timeAgo(t){
+  var s = Math.max(0, Math.round((Date.now() - t) / 1000));
+  if(s < 60) return "à l'instant";
+  var m = Math.round(s / 60); if(m < 60) return 'il y a ' + m + ' min';
+  var h = Math.round(m / 60); if(h < 24) return 'il y a ' + h + ' h';
+  return 'il y a ' + Math.round(h / 24) + ' j';
+}
+function notifText(n){
+  var who = '<b style="color:#E6C87A;">' + esc(n.fromPseudo) + '</b>';
+  if(n.type === 'like'){ return '❤️ ' + who + ' a aimé ton post' + (n.postText ? ' « ' + esc(n.postText) + ' »' : ''); }
+  if(n.type === 'comment'){ return '💬 ' + who + ' a commenté : « ' + esc(n.text) + ' »'; }
+  if(n.type === 'follow'){ return '👤 ' + who + " s'est abonné à toi"; }
+  return '🔔 ' + who;
+}
+function updateNotifBadge(){
+  var btn = document.getElementById('nav-notifs');
+  if(!btn) return;
+  var n = myNotifs.filter(function(x){ return !x.read; }).length;
+  var b = document.getElementById('notifBadge');
+  if(!b){
+    b = document.createElement('span');
+    b.id = 'notifBadge';
+    b.style.cssText = 'position:absolute; top:-4px; right:-10px; background:#FF3B5C; color:white; border-radius:10px; padding:1px 5px; font-size:10px; font-weight:bold; display:none;';
+    var icon = btn.querySelector('span');
+    if(icon){ icon.style.position = 'relative'; icon.style.display = 'inline-block'; icon.appendChild(b); }
+  }
+  b.textContent = n > 9 ? '9+' : String(n);
+  b.style.display = n ? 'inline-block' : 'none';
+}
+function renderNotifs(){
+  var list = document.getElementById('notifsList');
+  if(!list) return;
+  list.innerHTML = '';
+  if(!myNotifs.length){
+    list.innerHTML = "<p style='color:#7A8BB0;'>Pas encore de notifications. Elles apparaîtront quand quelqu'un aime, commente ou s'abonne.</p>";
+    return;
+  }
+  myNotifs.forEach(function(n){
+    var d = document.createElement('div');
+    d.style.cssText = 'padding:12px; background:' + (n.read ? '#151D2F' : '#1C2A4A') + '; border-radius:12px; border-left:3px solid ' + (n.read ? '#2A3A5A' : '#FFD88A') + '; font-size:13px; color:#F0EDE8; cursor:pointer; word-break:break-word;';
+    d.onclick = function(){ if(n.type === 'follow'){ viewUserById(n.fromUid); } else { showPage('page-feed'); } };
+    d.innerHTML = notifText(n) + '<br><small style="color:#7A8BB0;">' + esc(timeAgo(n.time)) + '</small>';
+    list.appendChild(d);
+  });
+}
+function scheduleMarkRead(){
+  clearTimeout(notifReadTimer);
+  notifReadTimer = setTimeout(markNotifsRead, 2000);
+}
+function markNotifsRead(){
+  var page = document.getElementById('page-notifs');
+  if(!myUid || !page || !page.classList.contains('active')) return;
+  var unread = myNotifs.filter(function(x){ return !x.read; });
+  if(!unread.length) return;
+  var batch = window.db.batch();
+  unread.forEach(function(n){ batch.update(notifCol(myUid).doc(n.id), { read: true }); });
+  batch.commit().catch(function(e){ console.log('notifs lues', e); });
+}
+function startNotifs(){
+  stopNotifs();
+  unsubNotifs = notifCol(myUid).orderBy('createdAt', 'desc').limit(50).onSnapshot(function(snap){
+    myNotifs = [];
+    snap.forEach(function(d){
+      var x = d.data({ serverTimestamps: 'estimate' });
+      var t = (x.createdAt && x.createdAt.toMillis) ? x.createdAt.toMillis() : Date.now();
+      myNotifs.push({ id: d.id, type: x.type, fromUid: x.fromUid, fromPseudo: x.fromPseudo || 'Quelqu\u2019un', text: x.text || '', postText: x.postText || '', read: x.read === true, time: t });
+    });
+    updateNotifBadge();
+    var page = document.getElementById('page-notifs');
+    if(page && page.classList.contains('active')){ renderNotifs(); scheduleMarkRead(); }
+  }, function(e){ alert('Notifications : ' + traduireErreur(e)); });
+}
+function stopNotifs(){
+  if(unsubNotifs){ unsubNotifs(); unsubNotifs = null; }
+  clearTimeout(notifReadTimer);
+  myNotifs = [];
+  updateNotifBadge();
+}
+function convIdOf(a, b){ return [a, b].sort().join('_'); }
+function msgTime(m){ return (m.createdAt && m.createdAt.toMillis) ? m.createdAt.toMillis() : Date.now(); }
+function ensureUserDoc(u, pseudo){
+  if(!window.db || !u || !pseudo) return;
+  window.db.collection('users').doc(u.uid).set({ pseudo: pseudo, pseudoLower: pseudo.toLowerCase() }, { merge: true }).catch(function(e){ console.log('users doc', e); });
+}
+function startMessaging(user){
+  stopMessaging();
+  myUid = user.uid;
+  unsubUsers = window.db.collection('users').onSnapshot(function(snap){
+    realUsers = {}; allUsers = {};
+    snap.forEach(function(d){ var x = d.data(); allUsers[d.id] = x; if(d.id !== myUid && x.pseudo) realUsers[d.id] = x; });
+    updateMyAvatar();
+    renderMessagesList();
+    renderAllPosts();
+  }, function(e){ console.log('users', e); });
+  unsubMsgs = window.db.collection('messages').where('participants', 'array-contains', myUid).onSnapshot(function(snap){
+    allMyMsgs = [];
+    snap.forEach(function(d){ var m = d.data({ serverTimestamps: 'estimate' }); m.id = d.id; allMyMsgs.push(m); });
+    allMyMsgs.sort(function(a, b){ return msgTime(a) - msgTime(b); });
+    renderMessagesList();
+    if(currentChatUid) renderChat();
+  }, function(e){ alert('Messages : ' + traduireErreur(e)); });
+}
+function stopMessaging(){
+  if(unsubMsgs){ unsubMsgs(); unsubMsgs = null; }
+  if(unsubUsers){ unsubUsers(); unsubUsers = null; }
+  myUid = null; allMyMsgs = []; realUsers = {}; allUsers = {}; currentChatUid = null;
+}
+function pseudoOf(uid){
+  if(realUsers[uid]) return realUsers[uid].pseudo;
+  for(var i = allMyMsgs.length - 1; i >= 0; i--){
+    var m = allMyMsgs[i];
+    if(m.from === uid && m.fromPseudo) return m.fromPseudo;
+    if(m.to === uid && m.toPseudo) return m.toPseudo;
+  }
+  return 'Utilisateur';
+}
+function renderMessagesList(){
+  var bar = document.getElementById('onlineBar'), list = document.getElementById('messagesList');
+  if(!bar || !list) return;
+  bar.innerHTML = ''; list.innerHTML = '';
+  if(!myUid){ list.innerHTML = '<p style="color:#7A8BB0; text-align:center;">Connecte-toi pour voir tes messages</p>'; return; }
+  var uids = Object.keys(realUsers);
+  uids.forEach(function(uid){
+    var u = realUsers[uid], div = document.createElement('div');
+    div.className = 'online-user';
+    div.onclick = function(){ openChat(uid); };
+    div.innerHTML = '<img src="' + avatarFor(uid, u.pseudo) + '" style="width:48px; height:48px; border-radius:50%; border:2px solid #FFD88A;"><div>' + esc(u.pseudo) + '</div>';
+    bar.appendChild(div);
+  });
+  if(uids.length === 0){ bar.innerHTML = '<small style="color:#7A8BB0;">Aucun autre utilisateur pour le moment. Invite tes amis à créer un compte !</small>'; }
+  var last = {};
+  allMyMsgs.forEach(function(m){
+    var other = m.participants.filter(function(x){ return x !== myUid; })[0];
+    if(other) last[other] = m;
+  });
+  var convs = Object.keys(last).sort(function(a, b){ return msgTime(last[b]) - msgTime(last[a]); });
+  convs.forEach(function(uid){
+    var m = last[uid], d = document.createElement('div');
+    d.style.cssText = 'display:flex; gap:10px; align-items:center; padding:12px; background:#151D2F; border-radius:12px; cursor:pointer;';
+    d.onclick = function(){ openChat(uid); };
+    var apercu = ((m.from === myUid ? 'Toi : ' : '') + (m.text || '')).slice(0, 30);
+    d.innerHTML = '<img src="' + avatarFor(uid, pseudoOf(uid)) + '" style="width:40px; height:40px; border-radius:50%; object-fit:cover;"><div><b style="color:#E6C87A;">' + esc(pseudoOf(uid)) + '</b><br><small style="color:#9AA4B2;">' + esc(apercu) + '</small></div>';
+    list.appendChild(d);
+  });
+  if(convs.length === 0){ list.innerHTML = '<p style="color:#7A8BB0; text-align:center;">Aucune conversation. Touche un utilisateur ci-dessus pour lui écrire.</p>'; }
+}
+function sendMessage(){
+  if(currentViewUid){ showPage('page-messages'); openChat(currentViewUid); return; }
+  alert("Ce profil est un exemple (démo). Pour discuter, ouvre l'onglet Msgs et choisis un vrai utilisateur.");
+  showPage('page-messages');
+}
+function openChat(uid){
+  if(!myUid){ alert('Connecte-toi pour écrire un message.'); return; }
+  currentChatUid = uid;
+  document.getElementById('msgTitle').style.display = 'none';
+  document.getElementById('onlineBar').style.display = 'none';
+  document.getElementById('messagesList').style.display = 'none';
+  document.getElementById('chatBox').style.display = 'flex';
+  document.getElementById('chatName').textContent = pseudoOf(uid);
+  document.getElementById('chatAvatar').src = avatarFor(uid, pseudoOf(uid));
+  renderChat();
+}
+function renderChat(){
+  var box = document.getElementById('chatMessages');
+  box.innerHTML = '';
+  var cid = convIdOf(myUid, currentChatUid);
+  allMyMsgs.filter(function(m){ return m.convId === cid; }).forEach(function(m){
+    var div = document.createElement('div');
+    div.style.cssText = (m.from === myUid)
+      ? 'align-self:flex-end; background:#FFD88A; color:#0A1020; padding:10px 14px; border-radius:18px 18px 4px 18px; max-width:70%; font-size:14px; word-break:break-word;'
+      : 'align-self:flex-start; background:#1C2A4A; color:white; padding:10px 14px; border-radius:18px 18px 18px 4px; max-width:70%; font-size:14px; word-break:break-word;';
+    div.textContent = m.text;
+    box.appendChild(div);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+function closeChat(){
+  document.getElementById('chatBox').style.display = 'none';
+  document.getElementById('messagesList').style.display = 'flex';
+  document.getElementById('onlineBar').style.display = 'flex';
+  document.getElementById('msgTitle').style.display = 'block';
+  currentChatUid = null;
+  renderMessagesList();
+}
+async function sendChatMessage(){
+  var input = document.getElementById('chatInput');
+  var text = input.value.trim();
+  if(!text || !currentChatUid || !myUid) return;
+  input.value = '';
+  try{
+    await window.db.collection('messages').add({
+      convId: convIdOf(myUid, currentChatUid),
+      participants: [myUid, currentChatUid],
+      from: myUid,
+      to: currentChatUid,
+      fromPseudo: localStorage.getItem('night_pseudo') || '@moi',
+      toPseudo: pseudoOf(currentChatUid),
+      text: text.slice(0, 2000),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }catch(e){ alert(traduireErreur(e)); input.value = text; }
+}
+document.getElementById('chatInput').addEventListener('keydown', function(e){ if(e.key === 'Enter'){ sendChatMessage(); } });
+
+function viewUser(k){ const u=users[k]; if(!u) return; currentView=k; currentViewUid=null; document.getElementById('otherName').textContent=u.name; document.getElementById('otherBio').textContent=u.bio; document.getElementById('otherAvatar').src=u.avatar; document.getElementById('otherCoverImg').src=''; document.getElementById('otherFollowers').textContent=Math.floor(Math.random()*500)+10; document.getElementById('otherLikes').textContent=Math.floor(Math.random()*100)+5; document.getElementById('followBtn').textContent=following.includes(k)?'Abonné ✓':"S'abonner"; showPage('page-other'); setTimeout(renderAllPosts,50); }
+var myFollowing = {}, myFollowersCount = 0, unsubFollowing = null, unsubFollowers = null, currentViewUid = null, otherFollowersCount = 0;
+function updateFollowUI(){
+  var f = document.getElementById('myFollowers'); if(f) f.textContent = myFollowersCount;
+  var g = document.getElementById('myFollowing'); if(g) g.textContent = Object.keys(myFollowing).length;
+  if(currentViewUid){
+    var b = document.getElementById('followBtn');
+    if(b) b.textContent = myFollowing[currentViewUid] ? 'Abonné ✓' : "S'abonner";
+  }
+}
+function startFollows(){
+  stopFollows();
+  unsubFollowing = window.db.collection('follows').where('follower', '==', myUid).onSnapshot(function(snap){
+    myFollowing = {};
+    snap.forEach(function(d){ myFollowing[d.data().followed] = true; });
+    updateFollowUI();
+  }, function(e){ console.log('follows', e); });
+  unsubFollowers = window.db.collection('follows').where('followed', '==', myUid).onSnapshot(function(snap){
+    myFollowersCount = snap.size;
+    updateFollowUI();
+  }, function(e){ console.log('followers', e); });
+}
+function stopFollows(){
+  if(unsubFollowing){ unsubFollowing(); unsubFollowing = null; }
+  if(unsubFollowers){ unsubFollowers(); unsubFollowers = null; }
+  myFollowing = {}; myFollowersCount = 0; currentViewUid = null;
+  updateFollowUI();
+}
+function viewUserById(uid){
+  if(!uid) return;
+  if(uid === myUid){ showPage('page-profile'); return; }
+  currentView = null; currentViewUid = uid; otherFollowersCount = 0;
+  var pseudo = pseudoOf(uid);
+  document.getElementById('otherName').textContent = pseudo;
+  document.getElementById('otherBio').textContent = 'Membre de NIGHT';
+  document.getElementById('otherAvatar').src = avatarFor(uid, pseudo);
+  setCoverImg('otherCoverImg', null);
+  document.getElementById('otherFollowers').textContent = '…';
+  document.getElementById('otherLikes').textContent = '0';
+  updateFollowUI();
+  showPage('page-other');
+  renderAllPosts();
+  window.db.collection('covers').doc(uid).get().then(function(d){
+    if(currentViewUid === uid){ setCoverImg('otherCoverImg', d.exists ? d.data().cover : null); }
+  }).catch(function(e){ console.log('cover', e); });
+  window.db.collection('follows').where('followed', '==', uid).get().then(function(snap){
+    if(currentViewUid === uid){ otherFollowersCount = snap.size; document.getElementById('otherFollowers').textContent = otherFollowersCount; }
+  }).catch(function(e){ console.log('followers', e); });
+}
+async function toggleFollow(){
+  if(!currentViewUid){ toggleFollowDemo(); return; }
+  if(!myUid){ alert("Connecte-toi pour t'abonner."); return; }
+  var target = currentViewUid;
+  var ref = window.db.collection('follows').doc(myUid + '_' + target);
+  var etaitAbonne = !!myFollowing[target];
+  try{
+    if(etaitAbonne){ await ref.delete(); }
+    else { await ref.set({ follower: myUid, followed: target, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); }
+    if(etaitAbonne){ removeNotif(target, 'follow_' + myUid); } else { sendNotif(target, 'follow', null, 'follow_' + myUid); }
+    if(currentViewUid === target){
+      otherFollowersCount = Math.max(0, otherFollowersCount + (etaitAbonne ? -1 : 1));
+      document.getElementById('otherFollowers').textContent = otherFollowersCount;
+    }
+  }catch(e){ alert(traduireErreur(e)); }
+}
+function toggleFollowDemo(){ if(!currentView) return; if(following.includes(currentView)){ following=following.filter(x=>x!==currentView); addNotif(`Tu t'es désabonné de ${users[currentView].name}`); } else{ following.push(currentView); addNotif(`${users[currentView].name} a été abonné par toi`); addNotif(`${users[currentView].name} s'est abonné à toi`); } localStorage.setItem('night_following',JSON.stringify(following)); document.getElementById('followBtn').textContent=following.includes(currentView)?'Abonné ✓':"S'abonner"; updateFollowUI(); }
+function doSearch(){
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const resDiv = document.getElementById('searchResults');
+  resDiv.innerHTML = '';
+  if(!q) return;
+  Object.keys(realUsers).forEach(function(uid){
+    var u = realUsers[uid];
+    if((u.pseudo || '').toLowerCase().includes(q)){
+      var d = document.createElement('div');
+      d.style.cssText = 'display:flex; gap:10px; align-items:center; padding:12px; background:#151D2F; border-radius:12px; cursor:pointer; color:#F0EDE8;';
+      d.innerHTML = '<img src="' + avatarFor(uid, u.pseudo) + '" style="width:40px; height:40px; border-radius:50%; object-fit:cover;"> <div><b>' + esc(u.pseudo) + '</b><br><small>Voir le profil</small></div>';
+      d.onclick = function(){ viewUserById(uid); };
+      resDiv.appendChild(d);
+    }
+  });
+  Object.keys(users).forEach(k=>{ const u=users[k]; if(u.name.toLowerCase().includes(q)){ const d=document.createElement('div'); d.style.cssText='display:flex; gap:10px; align-items:center; padding:12px; background:#151D2F; border-radius:12px; cursor:pointer; color:#F0EDE8;'; d.innerHTML=`<img src="${u.avatar}" style="width:40px; border-radius:50%;"> <div><b>${u.name}</b><br><small>${u.bio} (exemple)</small></div>`; d.onclick=()=>viewUser(k); resDiv.appendChild(d);} });
+}
+const savedPseudo=localStorage.getItem('night_pseudo'); if(savedPseudo) document.getElementById('profileName').textContent=savedPseudo; renderAllPosts(); renderStories(); renderNotifs(); renderMessagesList();
+if(window.firebaseAuth){
+  window.firebaseAuth.onAuthStateChanged(function(u){
+    if(u){
+      var f = u.displayName || localStorage.getItem('night_pseudo') || '@moi';
+      localStorage.setItem('night_pseudo', f);
+      document.getElementById('profileName').textContent = f;
+      if(u.displayName){ ensureUserDoc(u, u.displayName); }
+      startMessaging(u);
+      startPosts();
+      startFollows();
+      loadMyCover();
+      startStories();
+      startNotifs();
+      showPage('page-feed');
+    } else { stopMessaging(); stopPosts(); stopFollows(); stopStories(); stopNotifs(); setCoverImg('myCoverImg', null); renderMessagesList(); showPage('page-home'); }
+  });
+} else { showPage('page-home'); }
+function openForgot(){
+  const email = document.getElementById('loginEmail').value;
+  if(email) document.getElementById('forgotEmail').value = email;
+  document.getElementById('forgotBox').style.display='flex';
+  document.getElementById('forgotMsg').style.display='none';
+}
+function closeForgot(){
+  document.getElementById('forgotBox').style.display='none';
+}
+async function sendReset(){
+  const email = document.getElementById('forgotEmail').value.trim();
+  const msg = document.getElementById('forgotMsg');
+  if(!email){ alert('Mets ton email'); return; }
+  try{
+    await window.firebaseSendReset(window.firebaseAuth, email);
+    msg.textContent = "✅ Lien envoyé ! Vérifie tes emails (et les spams)";
+    msg.style.color = "#4ADE80";
+    msg.style.display = "block";
+    setTimeout(closeForgot, 2500);
+  } catch(e){
+    msg.textContent = "❌ " + e.message;
+    msg.style.color = "#FF3B5C";
+    msg.style.display = "block";
+  }
+}
+</script>
+</body>
+</html>
