@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NIGHT</title>
+<title>NIGHT FINAL</title>
 <link rel="stylesheet" href="css/style.css">
 <style>
 body{ background:#0A1128 !important; color:#F0EDE8 !important; margin:0; font-family:sans-serif; }
@@ -59,8 +59,22 @@ body{ background:#0A1128 !important; color:#F0EDE8 !important; margin:0; font-fa
 <input id="pseudoInput" type="text" placeholder="Pseudo" style="padding:14px; border-radius:12px; background:#151D2F; border:1px solid #2A3A5A; color:white;">
 <input id="signupEmail" type="email" placeholder="Email" style="padding:14px; border-radius:12px; background:#151D2F; border:1px solid #2A3A5A; color:white;">
 <input id="signupPass" type="password" placeholder="Mot de passe" style="padding:14px; border-radius:12px; background:#151D2F; border:1px solid #2A3A5A; color:white;">
+<label style="display:flex; gap:8px; align-items:flex-start; color:#9AA4B2; font-size:12px; text-align:left;"><input type="checkbox" id="termsCheck" style="margin-top:2px;"><span>J’ai au moins 16 ans et j’accepte les <u style="color:#FFD88A; cursor:pointer;" onclick="showRules(event)">règles d’utilisation</u>.</span></label>
 <button onclick="signup()" style="padding:14px; background:#FFD88A; border:none; border-radius:25px; font-weight:bold;">Créer un compte</button>
 <span onclick="showPage('page-home')" style="text-align:center; color:#7A8BB0; cursor:pointer; margin-top:10px;">← Déjà un compte ?</span>
+</div>
+</div>
+<div id="rulesModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,17,40,0.96); z-index:10001; align-items:center; justify-content:center; padding:16px;">
+<div style="background:#151E34; border:1px solid #2A3A5A; border-radius:16px; padding:18px; width:100%; max-width:360px; max-height:85%; overflow-y:auto; color:#F0EDE8; font-size:13px; line-height:1.5;">
+<h3 style="color:#FFD88A; margin-bottom:10px;">Règles d’utilisation de NIGHT</h3>
+<p>1. Tu dois avoir au moins 16 ans.</p>
+<p>2. <b>Interdit</b> : contenu sexuel, pornographique ou nudité ; violence ou images choquantes ; harcèlement, menaces, haine ; arnaques et spam ; vente de produits illégaux ; usurpation d’identité ; publication de données personnelles d’autrui sans son accord.</p>
+<p>3. <b>Tolérance zéro</b> pour tout contenu sexuel impliquant des mineurs : le contenu est supprimé, le compte banni et le cas peut être signalé aux autorités.</p>
+<p>4. Tu peux signaler un contenu avec le bouton 🚩. L’administrateur examine les signalements.</p>
+<p>5. Sanctions : suppression du contenu, suspension ou bannissement du compte, sans préavis.</p>
+<p>6. L’administrateur peut consulter les contenus signalés, et si c’est nécessaire pour la sécurité, les données du site.</p>
+<p>7. Contact : <b id="rulesContact"></b></p>
+<button onclick="hideRules()" style="margin-top:12px; width:100%; padding:12px; background:#FFD88A; border:none; border-radius:20px; font-weight:bold;">J’ai compris</button>
 </div>
 </div>
 <div id="forgotBox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,17,40,0.9); z-index:10000; align-items:center; justify-content:center; padding:20px;">
@@ -77,6 +91,7 @@ body{ background:#0A1128 !important; color:#F0EDE8 !important; margin:0; font-fa
 </div>
 <div id="page-feed" class="page">
 <div class="feed-top-bar"><div class="feed-logo">NIGHT 🌕</div><div style="margin-left:auto;"><button onclick="document.getElementById('newPostBox').style.display='block'" class="btn-publish-plus">+</button></div></div>
+<div id="verifyBanner" style="display:none; margin:10px 18px; padding:10px 12px; background:#2A2210; border:1px solid #FFD88A; border-radius:12px; color:#F0EDE8; font-size:12px; line-height:1.5;"></div>
 <div class="stories-bar" id="storiesBar">
 <div class="story-circle" onclick="addStory()"><div class="story-ring plus dotted">+</div><small>Ta story</small></div>
 </div>
@@ -91,7 +106,7 @@ body{ background:#0A1128 !important; color:#F0EDE8 !important; margin:0; font-fa
 <div class="posts-vertical" id="feedPosts" style="padding:10px 18px; display:flex; flex-direction:column; gap:12px;"></div>
 </div>
 <div id="storyViewer" class="story-viewer" onclick="closeStory()">
-<div style="padding:15px; display:flex; justify-content:space-between; color:white; background:linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);"><span id="storyUser"></span><div><span id="storyViews">0 Vu</span> <span id="storyDel" style="display:none; margin-left:15px;" onclick="event.stopPropagation(); deleteStory();">🗑</span> <span style="margin-left:15px;">✕</span></div></div>
+<div style="padding:15px; display:flex; justify-content:space-between; color:white; background:linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);"><span id="storyUser"></span><div><span id="storyViews">0 Vu</span> <span id="storyDel" style="display:none; margin-left:15px;" onclick="event.stopPropagation(); deleteStory();">🗑</span> <span id="storyReport" style="display:none; margin-left:15px;" onclick="event.stopPropagation(); reportStory();">🚩</span> <span style="margin-left:15px;">✕</span></div></div>
 <div style="flex:1; display:flex; align-items:center; justify-content:center;"><img id="storyImage" src="" style="max-width:100%; max-height:75vh; border-radius:12px;"></div>
 </div>
 <div id="page-search" class="page">
@@ -106,10 +121,12 @@ body{ background:#0A1128 !important; color:#F0EDE8 !important; margin:0; font-fa
 <div class="profile-counters"><div class="counter-box"><b id="otherFollowers">0</b><small>ABONNÉS</small></div><div class="counter-box"><b id="otherLikes">0</b><small>LIKES</small></div></div>
 <button id="followBtn" class="btn-follow" onclick="toggleFollow()">S'abonner</button>
 <button class="btn-moon-message" onclick="sendMessage()">✉️ Envoyer un message</button>
+<button class="btn-moon-message" style="border-color:#FF3B5C; color:#FF3B5C;" onclick="reportUser()">🚩 Signaler ce profil</button>
 <div id="otherPosts" style="padding:10px 18px; text-align:left; display:flex; flex-direction:column; gap:10px;"></div>
 </div>
 <div id="page-profile" class="page" style="position:relative;">
 <button class="btn-logout-visible" onclick="logout()">⏻ Déconnexion</button>
+<button id="adminBtn" class="btn-logout-visible" style="display:none; left:12px; right:auto; background:#2A3A5A;" onclick="openAdmin()">🛡️ Modération</button>
 <div class="cover" style="margin-top:38px;"><img id="myCoverImg" src="" style="display:none;"><button class="cover-btn" onclick="document.getElementById('coverInput').click()">📷 Cover</button></div>
 <input type="file" id="coverInput" accept="image/*" style="display:none;" onchange="changeCover(event)">
 <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="changeAvatar(event)">
@@ -118,6 +135,12 @@ body{ background:#0A1128 !important; color:#F0EDE8 !important; margin:0; font-fa
 <div class="profile-counters"><div class="counter-box"><b id="myFollowers">0</b><small>ABONNÉS</small></div><div class="counter-box"><b id="myFollowing">0</b><small>ABONNEMENTS</small></div><div class="counter-box"><b id="myLikes">0</b><small>LIKES</small></div></div>
 <div id="myStoryBadge" style="display:none; text-align:center; margin:10px;"><span style="padding:6px 12px; background:#151D2F; border:1.5px dashed #FFD88A; border-radius:20px; color:#FFD88A; font-size:12px;">🌕 Ta story active - <span id="myStoryViews">0 Vu</span></span></div>
 <div id="profilePosts" style="padding:10px 18px; display:flex; flex-direction:column; gap:12px;"></div>
+</div>
+<div id="page-admin" class="page">
+<div style="padding:18px; display:flex; justify-content:space-between; align-items:center;"><span onclick="showPage('page-profile')" style="cursor:pointer; color:white;">← Retour</span><span onclick="loadAdmin()" style="cursor:pointer; color:#FFD88A;">↻ Actualiser</span></div>
+<h2 style="padding:0 18px 10px; color:#F0EDE8;">🛡️ Modération</h2>
+<div id="adminReports" style="padding:0 18px; display:flex; flex-direction:column; gap:10px;"></div>
+<div id="adminBans" style="padding:0 18px 90px;"></div>
 </div>
 <div id="page-notifs" class="page"><h2 style="padding:20px; color:#F0EDE8;">Notifications</h2><div id="notifsList" style="padding:0 18px; display:flex; flex-direction:column; gap:10px;"></div></div>
 <div id="page-messages" class="page">
@@ -175,6 +198,11 @@ let mediaRecorder=null, audioChunks=[], audioBlob=null, vocalTimer=null, vocalSe
 let totalLikes = parseInt(localStorage.getItem('night_likes')||'0');
 function showPage(id){ if(id!=='page-other') prevPage=id; document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.getElementById('bottomNav').style.display=(id==='page-home'||id==='page-signup')?'none':'flex'; document.querySelectorAll('.nav-btn').forEach(b=>{b.style.color='#7A8BB0'; b.classList.remove('active-nav');}); const activeMap={ 'page-feed':'nav-feed','page-search':'nav-search','page-notifs':'nav-notifs','page-profile':'nav-profile','page-messages':'nav-msgs'}; if(activeMap[id]){ document.getElementById(activeMap[id]).style.color='#FFD88A'; document.getElementById(activeMap[id]).style.textShadow='0 0 10px #FFD88A'; document.getElementById(activeMap[id]).classList.add('active-nav'); } if(id==='page-profile'){ updateFollowUI(); updateMyAvatar(); document.getElementById('myLikes').textContent=myLikesCount(); renderMyStoryBadge(); } if(id==='page-notifs'){ renderNotifs(); scheduleMarkRead(); } if(id==='page-messages') renderMessagesList(); if(id!=='page-messages') document.getElementById('chatBox').style.display='none'; }
 function goBack(){ showPage(prevPage); }
+function authReady(){
+  if(window.firebaseAuth && window.db) return true;
+  alert("La connexion à Firebase n'a pas pu démarrer. Vérifie ta connexion internet, puis recharge la page (↻).");
+  return false;
+}
 function traduireErreur(e){
   var c = (e && e.code) || '';
   if(c==='auth/email-already-in-use') return 'Cet email est déjà utilisé.';
@@ -182,15 +210,19 @@ function traduireErreur(e){
   if(c==='auth/weak-password') return 'Mot de passe trop faible (6 caractères minimum).';
   if(c==='auth/user-not-found'||c==='auth/wrong-password'||c==='auth/invalid-credential'||c==='auth/invalid-login-credentials') return 'Email ou mot de passe incorrect.';
   if(c==='auth/operation-not-allowed') return "La connexion par email n'est pas activée : Firebase → Authentication → Sign-in method → Email/Mot de passe.";
-  if(c==='permission-denied') return "Accès refusé : vérifie que les règles Firestore sont bien publiées.";
+  if(c==='permission-denied') return "Accès refusé : règles Firestore non publiées, email non vérifié, ou compte suspendu.";
+  if(c==='auth/too-many-requests') return 'Trop de tentatives. Réessaie dans quelques minutes.';
   if(c==='auth/network-request-failed') return 'Problème de connexion internet.';
   return 'Erreur : ' + (e && e.message ? e.message : e);
 }
 async function signup(){
+  if(!authReady()) return;
   var p = document.getElementById('pseudoInput').value.trim();
   var email = document.getElementById('signupEmail').value.trim();
   var pass = document.getElementById('signupPass').value;
   if(!p){ alert('Pseudo requis'); return; }
+  if(!document.getElementById('termsCheck').checked){ alert("Tu dois accepter les règles d'utilisation (et avoir au moins 16 ans)."); return; }
+  if(hasBadWord(p)){ badWordAlert(); return; }
   if(!email || !pass){ alert('Email et mot de passe requis'); return; }
   if(pass.length < 6){ alert('Mot de passe : 6 caractères minimum'); return; }
   var f = p; if(!f.startsWith('@')) f = '@' + f;
@@ -204,10 +236,13 @@ async function signup(){
     }catch(err){ console.log('Profil Firestore non enregistré', err); }
     document.getElementById('profileName').textContent = f;
     localStorage.setItem('night_pseudo', f);
+    try{ await cred.user.sendEmailVerification(); alert('Compte créé ! Un email de vérification a été envoyé à ' + email + '. Ouvre-le (regarde aussi les spams) pour pouvoir publier.'); }catch(err){ console.log('verif', err); }
+    updateVerifyBanner();
     showPage('page-feed');
   }catch(e){ alert(traduireErreur(e)); }
 }
 async function login(){
+  if(!authReady()) return;
   var email = document.getElementById('loginEmail').value.trim();
   var pass = document.getElementById('loginPass').value;
   if(!email || !pass){ alert('Email et mot de passe requis'); return; }
@@ -264,11 +299,11 @@ function renderAllPosts(){
 }
 function createPostHTML(post, isMine){
   const liked = !!myUid && post.likedBy.indexOf(myUid) !== -1;
-  const del = isMine ? `<span style="float:right; color:#FF3B5C; cursor:pointer; font-size:12px;" onclick="deletePost('${post.id}')">🗑 Supprimer</span>` : '';
-  const commentsHTML = post.comments.map(c => `<div style="margin-top:8px; padding:8px; background:#0A1128; border-radius:8px; font-size:13px; border-left:2px solid #FFD88A; color:#F0EDE8; word-break:break-word;"><b style="color:#E6C87A;">${esc(c.user)}</b> ${esc(c.text)}</div>`).join('');
+  const del = (isMine || myIsAdmin) ? `<span style="float:right; color:#FF3B5C; cursor:pointer; font-size:12px;" onclick="deletePost('${post.id}')">🗑 Supprimer</span>` : '';
+  const commentsHTML = post.comments.map(c => `<div style="margin-top:8px; padding:8px; background:#0A1128; border-radius:8px; font-size:13px; border-left:2px solid #FFD88A; color:#F0EDE8; word-break:break-word;">${(myUid && c.uid !== myUid) ? `<span style="float:right; cursor:pointer; opacity:0.7;" onclick="reportComment('${post.id}', ${Number(c.time) || 0}, '${esc(c.uid || '')}')">🚩</span>` : ''}<b style="color:#E6C87A;">${esc(c.user)}</b> ${esc(c.text)}</div>`).join('');
   const imgOk = post.img && post.img.indexOf('data:image/jpeg;base64,') === 0;
   const audioOk = typeof post.audio === 'string' && post.audio.length < 300000 && AUDIO_RE.test(post.audio);
-  return `${del}<div><div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="viewUserById('${esc(post.authorUid || '')}')"><img src="${avatarFor(post.authorUid, post.user)}" style="width:34px; height:34px; border-radius:50%; object-fit:cover;"><b style="color:#E6C87A;">${esc(post.user)}</b></div><div style="margin:8px 0; color:#F0EDE8; white-space:pre-wrap; word-break:break-word;">${esc(post.text)}</div>${imgOk ? `<img src="${post.img}" style="width:100%; border-radius:10px; margin:8px 0;"><br>` : ''}${audioOk ? `<audio controls preload="none" src="${post.audio}" style="width:100%; margin:8px 0;"></audio>` : ''}<div style="display:flex; gap:15px; margin-top:8px; color:#F0EDE8;"><span onclick="likePost('${post.id}')" style="cursor:pointer;">${liked ? '❤️' : '🤍'} ${post.likes}</span><span style="cursor:pointer;" onclick="commentPost('${post.id}')">💬 ${post.comments.length}</span></div><div>${commentsHTML}</div></div>`;
+  return `${del}<div><div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="viewUserById('${esc(post.authorUid || '')}')"><img src="${avatarFor(post.authorUid, post.user)}" style="width:34px; height:34px; border-radius:50%; object-fit:cover;"><b style="color:#E6C87A;">${esc(post.user)}</b></div><div style="margin:8px 0; color:#F0EDE8; white-space:pre-wrap; word-break:break-word;">${esc(post.text)}</div>${imgOk ? `<img src="${post.img}" style="width:100%; border-radius:10px; margin:8px 0;"><br>` : ''}${audioOk ? `<audio controls preload="none" src="${post.audio}" style="width:100%; margin:8px 0;"></audio>` : ''}<div style="display:flex; gap:15px; margin-top:8px; color:#F0EDE8;"><span onclick="likePost('${post.id}')" style="cursor:pointer;">${liked ? '❤️' : '🤍'} ${post.likes}</span><span style="cursor:pointer;" onclick="commentPost('${post.id}')">💬 ${post.comments.length}</span>${isMine ? '' : `<span style="margin-left:auto; cursor:pointer; opacity:0.75;" onclick="reportPost('${post.id}')">🚩</span>`}</div><div>${commentsHTML}</div></div>`;
 }
 async function deletePost(id){
   if(!confirm('Supprimer ce post ?')) return;
@@ -289,6 +324,7 @@ async function commentPost(id){
   if(!myUid){ alert('Connecte-toi pour commenter.'); return; }
   const text = prompt('Ton commentaire :');
   if(!text || !text.trim()) return;
+  if(hasBadWord(text)){ badWordAlert(); return; }
   const fv = firebase.firestore.FieldValue;
   const post = allPosts.find(p => p.id === id);
   const clean = text.trim().slice(0, 500);
@@ -329,6 +365,8 @@ async function publishPost(){
   const file = document.getElementById('postImage').files[0];
   if(mediaRecorder && mediaRecorder.state === 'recording'){ alert("Arrête d'abord l'enregistrement du vocal."); return; }
   if(!text && !file && !audioBlob){ alert('Ajoute un texte, une photo ou un vocal'); return; }
+  if(!needVerified()) return;
+  if(hasBadWord(text)){ badWordAlert(); return; }
   publishing = true;
   try{
     let img = '', audio = '';
@@ -445,6 +483,7 @@ async function changeCover(e){
   e.target.value = '';
   if(!file) return;
   if(!myUid){ alert('Connecte-toi pour changer ta couverture.'); return; }
+  if(!needVerified()) return;
   try{
     var data = await compressCover(file);
     await window.db.collection('covers').doc(myUid).set({ cover: data });
@@ -519,6 +558,7 @@ async function handleStoryFile(e){
   e.target.value = '';
   if(!file) return;
   if(!myUid){ alert('Connecte-toi pour publier une story.'); return; }
+  if(!needVerified()) return;
   try{
     var img = await compressImage(file, 640, 220000);
     await window.db.collection('stories').add({
@@ -539,7 +579,8 @@ function openStory(i){
   document.getElementById('storyImage').src = okJpeg(s.img, 300000);
   document.getElementById('storyUser').textContent = s.user;
   document.getElementById('storyViews').textContent = mine ? (s.viewers.length + ' Vu') : '';
-  document.getElementById('storyDel').style.display = mine ? 'inline' : 'none';
+  document.getElementById('storyDel').style.display = (mine || myIsAdmin) ? 'inline' : 'none';
+  document.getElementById('storyReport').style.display = mine ? 'none' : 'inline';
   document.getElementById('storyViewer').classList.add('active');
   if(!mine && myUid && s.viewers.indexOf(myUid) === -1){
     window.db.collection('stories').doc(s.id).update({ viewers: firebase.firestore.FieldValue.arrayUnion(myUid) }).catch(function(e){ console.log('vue', e); });
@@ -692,6 +733,218 @@ function stopNotifs(){
   clearTimeout(notifReadTimer);
   myNotifs = [];
   updateNotifBadge();
+}
+var CONTACT_EMAIL = 'suppotrtnight85@gmail.com';
+var myIsAdmin = false;
+var BAD_WORDS = ['porn', 'porno', 'pornographie', 'xxx', 'nude', 'nudes', 'sexcam', 'sextape', 'hentai', 'xvideos', 'xnxx', 'onlyfans'];
+var BAD_RE = new RegExp('(^|[^a-z0-9])(' + BAD_WORDS.join('|') + ')([^a-z0-9]|$)');
+function normText(t){
+  return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/0/g, 'o').replace(/1/g, 'i').replace(/3/g, 'e').replace(/4/g, 'a').replace(/5/g, 's').replace(/@/g, 'a').replace(/\$/g, 's');
+}
+function hasBadWord(t){ return BAD_RE.test(normText(t)); }
+function badWordAlert(){ alert("Ton texte contient un mot interdit par les règles d'utilisation. Modifie-le puis réessaie."); }
+function showRules(e){
+  if(e){ e.stopPropagation(); e.preventDefault(); }
+  document.getElementById('rulesContact').textContent = CONTACT_EMAIL;
+  document.getElementById('rulesModal').style.display = 'flex';
+}
+function hideRules(){ document.getElementById('rulesModal').style.display = 'none'; }
+function isVerified(){ var u = window.firebaseAuth && window.firebaseAuth.currentUser; return !!(u && u.emailVerified); }
+function needVerified(){
+  if(isVerified()) return true;
+  alert("Vérifie d'abord ton adresse email (bandeau en haut du fil), puis touche « J'ai vérifié ».");
+  return false;
+}
+function updateVerifyBanner(){
+  var b = document.getElementById('verifyBanner');
+  if(!b) return;
+  var u = window.firebaseAuth && window.firebaseAuth.currentUser;
+  if(!u || u.emailVerified){ b.style.display = 'none'; return; }
+  b.style.display = 'block';
+  b.innerHTML = '⚠️ Vérifie ton email (<b>' + esc(u.email) + '</b>) pour publier des posts, stories et couvertures. Regarde aussi dans les spams.<br><span style="color:#FFD88A; cursor:pointer; text-decoration:underline;" onclick="resendVerify()">Renvoyer l\u2019email</span> &nbsp;•&nbsp; <span style="color:#FFD88A; cursor:pointer; text-decoration:underline;" onclick="checkVerified()">J\u2019ai vérifié</span>';
+}
+async function resendVerify(){
+  var u = window.firebaseAuth.currentUser;
+  if(!u) return;
+  try{ await u.sendEmailVerification(); alert('Email envoyé. Ouvre-le et touche le lien (regarde aussi les spams).'); }
+  catch(e){ alert(traduireErreur(e)); }
+}
+async function checkVerified(){
+  var u = window.firebaseAuth.currentUser;
+  if(!u) return;
+  try{ await u.reload(); await u.getIdToken(true); }catch(e){ alert(traduireErreur(e)); return; }
+  updateVerifyBanner();
+  alert(u.emailVerified ? 'Email vérifié ✅ Tu peux publier.' : "Pas encore vérifié. Ouvre l'email reçu et touche le lien, puis réessaie.");
+}
+async function checkBan(u){
+  try{
+    var d = await window.db.collection('bans').doc(u.uid).get();
+    if(d.exists){ alert('Ton compte a été suspendu pour non-respect des règles. Contact : ' + CONTACT_EMAIL); window.firebaseAuth.signOut(); }
+  }catch(e){ console.log('ban', e); }
+}
+async function checkAdmin(u){
+  try{ var d = await window.db.collection('admins').doc(u.uid).get(); myIsAdmin = d.exists; }
+  catch(e){ myIsAdmin = false; }
+  var b = document.getElementById('adminBtn');
+  if(b){ b.style.display = myIsAdmin ? 'block' : 'none'; }
+  renderAllPosts();
+}
+var REASONS = { '1': 'adulte', '2': 'violence', '3': 'harcelement', '4': 'arnaque', '5': 'autre' };
+var REASON_LABEL = { adulte: 'Contenu pour adultes', violence: 'Violence', harcelement: 'Harcèlement', arnaque: 'Arnaque / spam', autre: 'Autre' };
+function askReason(){
+  var r = prompt("Pourquoi signaler ?\n1 = Contenu pour adultes\n2 = Violence\n3 = Harcèlement\n4 = Arnaque / spam\n5 = Autre\n\nTape le chiffre :");
+  if(r === null) return null;
+  var code = REASONS[String(r).trim()];
+  if(!code){ alert('Choix non valide.'); return null; }
+  return code;
+}
+async function sendReport(type, targetId, targetUid, preview, commentTime){
+  if(!myUid){ alert('Connecte-toi pour signaler.'); return; }
+  if(targetUid && targetUid === myUid){ alert('Tu ne peux pas signaler ton propre contenu.'); return; }
+  var reason = askReason();
+  if(!reason) return;
+  var id = type + '_' + targetId + '_' + myUid + (commentTime ? '_' + commentTime : '');
+  var data = {
+    type: type, targetId: targetId, targetUid: targetUid || '', reporterUid: myUid,
+    reporterPseudo: (localStorage.getItem('night_pseudo') || '@moi').slice(0, 40),
+    reason: reason, preview: String(preview || '').slice(0, 100), status: 'open',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  if(commentTime){ data.commentTime = commentTime; }
+  try{ await window.db.collection('reports').doc(id).set(data); alert('Merci, ton signalement a été envoyé.'); }
+  catch(e){
+    if(e && e.code === 'permission-denied'){ alert('Tu as déjà signalé ce contenu, ou le signalement est impossible.'); }
+    else { alert(traduireErreur(e)); }
+  }
+}
+function reportPost(id){
+  var p = allPosts.find(function(x){ return x.id === id; });
+  if(!p) return;
+  sendReport('post', id, p.authorUid, p.text || (p.img ? '[photo]' : (p.audio ? '[vocal]' : '')));
+}
+function reportComment(postId, time, uid){
+  var p = allPosts.find(function(x){ return x.id === postId; });
+  var c = p ? p.comments.find(function(x){ return Number(x.time) === Number(time) && x.uid === uid; }) : null;
+  sendReport('comment', postId, uid, c ? c.text : '', time || 1);
+}
+function reportStory(){
+  var s = stories.find(function(x){ return x.id === openStoryId; });
+  if(!s) return;
+  clearTimeout(storyTimer);
+  sendReport('story', s.id, s.authorUid, '[story]');
+}
+function reportUser(){
+  if(!currentViewUid) return;
+  sendReport('user', currentViewUid, currentViewUid, pseudoOf(currentViewUid));
+}
+function pseudoAny(uid){ return (allUsers[uid] && allUsers[uid].pseudo) || (uid ? String(uid).slice(0, 6) + '…' : '?'); }
+function repTime(r){ return (r.createdAt && r.createdAt.toMillis) ? r.createdAt.toMillis() : Date.now(); }
+function mkBtn(label, color, fn){
+  var b = document.createElement('button');
+  b.textContent = label;
+  b.style.cssText = 'padding:6px 10px; border-radius:14px; border:1px solid ' + color + '; background:transparent; color:' + color + '; font-size:12px; cursor:pointer;';
+  b.onclick = fn;
+  return b;
+}
+function openAdmin(){
+  if(!myIsAdmin) return;
+  showPage('page-admin');
+  loadAdmin();
+}
+async function loadAdmin(){
+  var box = document.getElementById('adminReports'), banBox = document.getElementById('adminBans');
+  box.innerHTML = '<p style="color:#7A8BB0;">Chargement…</p>'; banBox.innerHTML = '';
+  try{
+    var snap = await window.db.collection('reports').where('status', '==', 'open').get();
+    var list = [];
+    snap.forEach(function(d){ var x = d.data({ serverTimestamps: 'estimate' }); x.id = d.id; list.push(x); });
+    list.sort(function(a, b){ return repTime(b) - repTime(a); });
+    renderAdminReports(list);
+    var bs = await window.db.collection('bans').get();
+    var bl = [];
+    bs.forEach(function(d){ var x = d.data(); x.id = d.id; bl.push(x); });
+    renderAdminBans(bl);
+  }catch(e){ box.innerHTML = '<p style="color:#FF3B5C;">' + esc(traduireErreur(e)) + '</p>'; }
+}
+function renderAdminReports(list){
+  var box = document.getElementById('adminReports');
+  box.innerHTML = '';
+  if(!list.length){ box.innerHTML = "<p style='color:#7A8BB0;'>Aucun signalement ouvert ✅</p>"; return; }
+  var labels = { post: '📝 Post', comment: '💬 Commentaire', story: '🌙 Story', user: '👤 Profil' };
+  list.forEach(function(r){
+    var card = document.createElement('div');
+    card.style.cssText = 'padding:12px; background:#151D2F; border:1px solid #2A3A5A; border-radius:12px; color:#F0EDE8; font-size:13px; word-break:break-word;';
+    card.innerHTML = '<b>' + (labels[r.type] || esc(r.type)) + '</b> — ' + esc(REASON_LABEL[r.reason] || r.reason) +
+      '<br><small style="color:#7A8BB0;">Signalé par ' + esc(r.reporterPseudo) + ' • auteur : ' + esc(pseudoAny(r.targetUid)) + ' • ' + esc(timeAgo(repTime(r))) + '</small>' +
+      '<div style="margin:6px 0; padding:8px; background:#0A1128; border-radius:8px;">' + esc(r.preview || '(vide)') + '</div>';
+    var view = document.createElement('div'), info = document.createElement('div'), row = document.createElement('div');
+    row.style.cssText = 'display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;';
+    if(r.type === 'post' || r.type === 'story'){ row.appendChild(mkBtn('👁 Voir', '#FFD88A', function(){ viewReported(r, view); })); }
+    if(r.type !== 'user'){ row.appendChild(mkBtn('🗑 Supprimer le contenu', '#FF3B5C', function(){ deleteReported(r, info); })); }
+    row.appendChild(mkBtn('🚫 Bannir l’auteur', '#FF3B5C', function(){ banUser(r.targetUid, info); }));
+    row.appendChild(mkBtn('✓ Classer', '#7ED9A0', function(){ closeReport(r, card); }));
+    card.appendChild(view); card.appendChild(row); card.appendChild(info);
+    box.appendChild(card);
+  });
+}
+function renderAdminBans(list){
+  var box = document.getElementById('adminBans');
+  box.innerHTML = '<h3 style="color:#F0EDE8; margin:18px 0 8px;">Comptes bannis</h3>';
+  if(!list.length){ box.innerHTML += "<p style='color:#7A8BB0;'>Aucun compte banni.</p>"; return; }
+  list.forEach(function(b){
+    var d = document.createElement('div');
+    d.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px; background:#151D2F; border-radius:10px; color:#F0EDE8; font-size:13px; margin-bottom:6px; word-break:break-word;';
+    d.innerHTML = '<span><b>' + esc(b.pseudo || pseudoAny(b.id)) + '</b><br><small style="color:#7A8BB0;">' + esc(b.reason || '') + '</small></span>';
+    d.appendChild(mkBtn('Débannir', '#7ED9A0', async function(){
+      if(!confirm('Débannir ce compte ?')) return;
+      try{ await window.db.collection('bans').doc(b.id).delete(); d.remove(); }catch(e){ alert(traduireErreur(e)); }
+    }));
+    box.appendChild(d);
+  });
+}
+async function viewReported(r, container){
+  container.innerHTML = '<small style="color:#7A8BB0;">Chargement…</small>';
+  try{
+    var d = await window.db.collection(r.type === 'story' ? 'stories' : 'posts').doc(r.targetId).get();
+    if(!d.exists){ container.innerHTML = '<small style="color:#7A8BB0;">Ce contenu n\u2019existe plus.</small>'; return; }
+    var x = d.data(), html = '';
+    if(x.text){ html += '<div style="margin:6px 0; white-space:pre-wrap;">' + esc(x.text) + '</div>'; }
+    var im = okJpeg(x.img, 800000);
+    if(im){ html += '<img src="' + im + '" style="width:100%; border-radius:10px; margin:6px 0;">'; }
+    if(x.audio){ html += '<div style="margin:6px 0; color:#7A8BB0;">(contient un vocal)</div>'; }
+    container.innerHTML = html || '<small style="color:#7A8BB0;">(rien à afficher)</small>';
+  }catch(e){ container.innerHTML = '<small style="color:#FF3B5C;">' + esc(traduireErreur(e)) + '</small>'; }
+}
+async function deleteReported(r, info){
+  if(!confirm('Supprimer ce contenu définitivement ?')) return;
+  try{
+    if(r.type === 'post'){ await window.db.collection('posts').doc(r.targetId).delete(); }
+    else if(r.type === 'story'){ await window.db.collection('stories').doc(r.targetId).delete(); }
+    else if(r.type === 'comment'){
+      var ref = window.db.collection('posts').doc(r.targetId);
+      var d = await ref.get();
+      if(d.exists){
+        var keep = (d.data().comments || []).filter(function(c){ return !(c.uid === r.targetUid && Number(c.time) === Number(r.commentTime)); });
+        await ref.update({ comments: keep });
+      }
+    }
+    info.innerHTML = '<small style="color:#7ED9A0;">✅ Contenu supprimé</small>';
+  }catch(e){ info.innerHTML = '<small style="color:#FF3B5C;">' + esc(traduireErreur(e)) + '</small>'; }
+}
+async function banUser(uid, info){
+  if(!uid){ return; }
+  if(uid === myUid){ alert('Tu ne peux pas te bannir toi-même.'); return; }
+  var reason = prompt('Raison du bannissement (visible seulement par toi) :', 'Non-respect des règles');
+  if(reason === null) return;
+  try{
+    await window.db.collection('bans').doc(uid).set({ by: myUid, pseudo: pseudoAny(uid), reason: String(reason).slice(0, 120), createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    info.innerHTML = '<small style="color:#7ED9A0;">✅ Compte banni</small>';
+  }catch(e){ info.innerHTML = '<small style="color:#FF3B5C;">' + esc(traduireErreur(e)) + '</small>'; }
+}
+async function closeReport(r, card){
+  try{ await window.db.collection('reports').doc(r.id).update({ status: 'done', closedBy: myUid }); card.remove(); }
+  catch(e){ alert(traduireErreur(e)); }
 }
 function convIdOf(a, b){ return [a, b].sort().join('_'); }
 function msgTime(m){ return (m.createdAt && m.createdAt.toMillis) ? m.createdAt.toMillis() : Date.now(); }
@@ -916,8 +1169,11 @@ if(window.firebaseAuth){
       loadMyCover();
       startStories();
       startNotifs();
+      checkBan(u);
+      checkAdmin(u);
+      updateVerifyBanner();
       showPage('page-feed');
-    } else { stopMessaging(); stopPosts(); stopFollows(); stopStories(); stopNotifs(); setCoverImg('myCoverImg', null); renderMessagesList(); showPage('page-home'); }
+    } else { stopMessaging(); stopPosts(); stopFollows(); stopStories(); stopNotifs(); myIsAdmin = false; updateVerifyBanner(); (function(){ var ab = document.getElementById('adminBtn'); if(ab){ ab.style.display = 'none'; } })(); setCoverImg('myCoverImg', null); renderMessagesList(); showPage('page-home'); }
   });
 } else { showPage('page-home'); }
 function openForgot(){
